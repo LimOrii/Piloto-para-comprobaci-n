@@ -1,0 +1,27 @@
+MAPA HÁPTICO — SIMULADOR (DADO)
+===============================
+Sitio web estático: no necesita Python, servidor ni instalación para quien lo use.
+
+PUBLICAR EN NETLIFY
+1. Descomprime este zip.
+2. Entra en https://app.netlify.com → «Add new site» → «Deploy manually».
+3. Arrastra la carpeta «mapa-haptico-simulador» completa.
+4. Netlify entrega un enlace https://…netlify.app: ese es el que se comparte.
+Para actualizar (por ejemplo, al añadir videos): «Deploys» → arrastrar de nuevo la carpeta.
+
+QUÉ HACE
+- Modo Ruta y modo Descripción, «Estás aquí», 15 destinos (Baño pide elegir piso 1 o 2).
+- Voz 1, 2 o 3 y velocidad lenta / normal / rápida (botones debajo del recuadro).
+- Repetir y Pausar/Reanudar. El audio nunca empieza solo.
+- Si no hay video en LSC para un destino, muestra el aviso y mantiene texto y audio.
+
+VIDEOS LSC (pendientes)
+Pon los .mp4 en la carpeta «videos» con los nombres de videos/LEEME.txt y vuelve a publicar. No hay que tocar código.
+
+CAMBIAR VOCES
+Las voces son pregrabadas (carpeta «audio»). Para usar las voces Piper propias hay que regenerar esos mp3 una vez
+con el proyecto fuente (tools/generar_audios.py); quien usa el simulador no necesita nada más.
+
+ENLACES ÚTILES (opcionales)
+  ?modo=description     abre en modo Descripción
+  ?destino=7            deja abierto el destino 7 (sin sonar hasta pulsar Repetir)

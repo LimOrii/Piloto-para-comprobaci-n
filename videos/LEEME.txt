@@ -1,0 +1,41 @@
+VIDEOS EN LENGUA DE SEÑAS COLOMBIANA (LSC)
+==========================================
+Pon aquí los videos con estos nombres exactos (formato mp4, H.264 + AAC; el mapa los reproduce sin sonido).
+Si falta un video, el mapa muestra un aviso y deja disponible el texto y el audio. No hace falta cambiar código.
+Después de añadirlos, vuelve a publicar la carpeta «dist» (o haz «git push» si publicas desde Git).
+
+Ruta dentro de esta carpeta → contenido
+estas_aqui.mp4                                       Estás aquí (orientación del kiosco)
+descripcion/01_recepcion.mp4                         Descripción · Recepción
+ruta/01_recepcion.mp4                                Ruta · Recepción
+descripcion/02_produccion.mp4                        Descripción · Producción
+ruta/02_produccion.mp4                               Ruta · Producción
+descripcion/03_impresion_uv.mp4                      Descripción · Impresión UV
+ruta/03_impresion_uv.mp4                             Ruta · Impresión UV
+descripcion/04_bodega_dpt.mp4                        Descripción · Bodega DPT
+ruta/04_bodega_dpt.mp4                               Ruta · Bodega DPT
+descripcion/05_bodega_editorial.mp4                  Descripción · Bodega Editorial
+ruta/05_bodega_editorial.mp4                         Ruta · Bodega Editorial
+descripcion/06_diseno_dpt.mp4                        Descripción · Diseño DPT
+ruta/06_diseno_dpt.mp4                               Ruta · Diseño DPT
+descripcion/07_editorial_sensorial.mp4               Descripción · Editorial Sensorial
+ruta/07_editorial_sensorial.mp4                      Ruta · Editorial Sensorial
+descripcion/08_comunicaciones.mp4                    Descripción · Comunicaciones
+ruta/08_comunicaciones.mp4                           Ruta · Comunicaciones
+descripcion/09_administracion_y_contabilidad.mp4     Descripción · Administración y Contabilidad
+ruta/09_administracion_y_contabilidad.mp4            Ruta · Administración y Contabilidad
+descripcion/10_gerencia.mp4                          Descripción · Gerencia
+ruta/10_gerencia.mp4                                 Ruta · Gerencia
+descripcion/11_comedor.mp4                           Descripción · Comedor
+ruta/11_comedor.mp4                                  Ruta · Comedor
+descripcion/12_bano.mp4                              Descripción · Baño
+ruta/12a_bano_piso_1.mp4                             Ruta · Baño, piso 1
+ruta/12b_bano_piso_2.mp4                             Ruta · Baño, piso 2
+descripcion/13_cocina.mp4                            Descripción · Cocina
+ruta/13_cocina.mp4                                   Ruta · Cocina
+descripcion/14_sala_de_reuniones.mp4                 Descripción · Sala de Reuniones
+ruta/14_sala_de_reuniones.mp4                        Ruta · Sala de Reuniones
+descripcion/15_parqueadero.mp4                       Descripción · Parqueadero
+ruta/15_parqueadero.mp4                              Ruta · Parqueadero
+
+Total: 32 videos.
