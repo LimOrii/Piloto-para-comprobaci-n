@@ -1126,7 +1126,7 @@ const vigente = t => t === S.token;
 const Audio_ = (() => {
   const a = new Audio();
   a.preload = 'auto';
-  let fin = null;
+  let actual = null;                 // la única reproducción vigente; cualquier otra ya no puede tocar nada
   const hayTTS = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
   const archivo = clave => {
     const e = MAN.frases[clave] && MAN.frases[clave].audios[`${S.voz}_${S.vel}`];
@@ -1134,29 +1134,37 @@ const Audio_ = (() => {
   };
   // Devuelve 'ok' | 'cancelado' | 'error'. Si falta el mp3, lee el texto con la voz del navegador (solo respaldo).
   function reproducir(clave, texto) {
+    cancelar();                       // nunca suenan dos audios a la vez
     return new Promise(resolve => {
+      const mio = { resolve, hecho: false };
+      actual = mio;
+      const vigente = () => actual === mio && !mio.hecho;
+      const terminar = r => { if (!vigente()) return; mio.hecho = true; actual = null; resolve(r); };
       const f = archivo(clave);
-      const terminar = r => { if (!fin) return; fin = null; resolve(r); };
-      fin = terminar;
       if (!f) {
         if (!hayTTS) return terminar('error');
         const u = new SpeechSynthesisUtterance(texto);
         u.lang = 'es-CO'; u.rate = VELS.find(v => v.id === S.vel).factor;
         u.onend = () => terminar('ok'); u.onerror = e => terminar(e && (e.error === 'canceled' || e.error === 'interrupted') ? 'cancelado' : 'error');
-        speechSynthesis.cancel(); speechSynthesis.speak(u);
+        speechSynthesis.speak(u);
         emitir('audio_inicio', { clave, voz: S.voz, vel: S.vel, respaldo: true });
         return;
       }
-      a.onended = () => { emitir('audio_fin', { clave }); terminar('ok'); };
-      a.onerror = () => { emitir('audio_error', { clave }); terminar('error'); };
+      a.onended = () => { if (!vigente()) return; emitir('audio_fin', { clave }); terminar('ok'); };
+      a.onerror = () => { if (!vigente()) return; emitir('audio_error', { clave }); terminar('error'); };
       a.src = f.src;
-      a.play().then(() => emitir('audio_inicio', { clave, voz: S.voz, vel: S.vel, wpm: f.wpm }))
-        .catch(e => { emitir('audio_error', { clave, causa: String(e && e.name) }); terminar('error'); });
+      a.play().then(() => { if (vigente()) emitir('audio_inicio', { clave, voz: S.voz, vel: S.vel, wpm: f.wpm }); })
+        .catch(e => { if (!vigente()) return; emitir('audio_error', { clave, causa: String(e && e.name) }); terminar('error'); });
     });
   }
+  function cancelar() {
+    const m = actual; actual = null;
+    a.onended = a.onerror = null; a.pause(); a.removeAttribute('src'); a.load();
+    if (hayTTS) speechSynthesis.cancel();
+    if (m && !m.hecho) { m.hecho = true; m.resolve('cancelado'); }
+  }
   return {
-    reproducir,
-    cancelar() { const f = fin; fin = null; a.pause(); a.onended = a.onerror = null; a.removeAttribute('src'); a.load(); if (hayTTS) speechSynthesis.cancel(); if (f) f('cancelado'); },
+    reproducir, cancelar,
     pausar() { a.pause(); if (hayTTS) speechSynthesis.pause(); },
     reanudar() { if (a.src && !a.ended) a.play().catch(() => {}); if (hayTTS) speechSynthesis.resume(); },
   };
@@ -1294,6 +1302,7 @@ async function conVideo(tok, srcVideo, titulo, clave, texto) {
 
 async function reproducir() {
   const tok = nueva();
+  S.rehacer = () => reproducir();
   const d = DEST.get(S.destino), piso = S.piso, modo = S.modo;
   const c = contenido(d, modo, piso);
   S.ultimo = { id: S.destino, modo, piso };
@@ -1320,6 +1329,7 @@ function pulsacion(k) { const t = performance.now(); if (t - (ultimaPulsacion.ge
 
 async function anunciar(clave, texto) {            // locución suelta (modo, aviso, muestra)
   const tok = nueva();
+  S.rehacer = () => anunciar(clave, texto);
   S.reproduccion = 'playing'; pintarPausa();
   await sleep(40);
   if (!vigente(tok)) return;
@@ -1403,10 +1413,11 @@ function pausarOReanudar() {
   emitir('pausar', {});
 }
 
-async function estasAqui() {
-  if (!pulsacion('aqui')) return;
-  emitir('estas_aqui', {});
+async function estasAqui(forzar = false) {
+  if (!forzar && !pulsacion('aqui')) return;
+  if (!forzar) emitir('estas_aqui', {});
   const tok = nueva();
+  S.rehacer = () => estasAqui(true);
   S.reproduccion = 'playing'; S.destino = null; S.piso = null; S.aqui = true; S.ultimo = null; S.modoAnunciado = null;
   marcarDestino(); pintarPausa();
   tarjeta({ etiqueta: 'Orientación', titulo: 'Estás aquí', texto: TXT.estasAqui });
@@ -1437,7 +1448,7 @@ $$('.boton').forEach(g => {
   g.addEventListener('click', () => elegirDestino(g.dataset.destinationId));
 });
 $$('.modo').forEach(g => g.addEventListener('click', () => elegirModo(g.dataset.modo)));
-$('.aqui').addEventListener('click', estasAqui);
+$('.aqui').addEventListener('click', () => estasAqui());
 document.addEventListener('keydown', e => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('.boton, .modo, .aqui')) {
     e.preventDefault();
@@ -1476,23 +1487,26 @@ function pintarControlVoz() {
   out.append(t, n);
   inhabilitar($('#vc-menos'), i <= 0); inhabilitar($('#vc-mas'), i >= VELS.length - 1);
 }
-function muestra() {
-  if (S.reproduccion === 'playing' || S.reproduccion === 'paused') return;
+// Cada pulsación de narrador o velocidad corta lo que suena y responde SIEMPRE:
+// si había algo en curso (indicación, orientación, aviso) lo repite con el ajuste nuevo; si no, dice una frase de muestra.
+function aplicarAjuste() {
+  const enCurso = (S.reproduccion === 'playing' || S.reproduccion === 'paused') && S.rehacer;
+  const v = VELS.find(x => x.id === S.vel);
+  if (enCurso) { S.rehacer(); return; }
   anunciar('texto.muestra', TXT.muestra);
+  estado(`Narrador ${S.voz} · Velocidad ${v.nombre}`, 'Así suena esta configuración.');
 }
 function cambiarVoz(id) {
   S.voz = id; guardado.poner('kiosco.voz', id); pintarControlVoz();
   emitir('voz', { voz: id });
-  if (S.reproduccion === 'playing' || S.reproduccion === 'paused') { if (S.destino || S.aqui) { S.reproduccion = 'idle'; repetir(); } }
-  else muestra();
+  aplicarAjuste();
 }
 function cambiarVel(delta) {
   const i = Math.min(VELS.length - 1, Math.max(0, VELS.findIndex(v => v.id === S.vel) + delta));
   if (VELS[i].id === S.vel) { mensajeTemporal(delta < 0 ? 'Ya está en la velocidad más lenta.' : 'Ya está en la velocidad más rápida.'); return; }
   S.vel = VELS[i].id; guardado.poner('kiosco.vel', S.vel); pintarControlVoz();
   emitir('velocidad', { velocidad: S.vel });
-  if (S.reproduccion === 'playing' || S.reproduccion === 'paused') { if (S.destino || S.aqui) { S.reproduccion = 'idle'; repetir(); } }
-  else muestra();
+  aplicarAjuste();
 }
 $('#vc-menos').addEventListener('click', () => cambiarVel(-1));
 $('#vc-mas').addEventListener('click', () => cambiarVel(1));

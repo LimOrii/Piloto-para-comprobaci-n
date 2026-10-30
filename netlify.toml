@@ -1,4 +1,4 @@
-# Sitio estático: no hay servidor ni comando de construcción. Netlify publica esta carpeta tal cual.
+# Sitio estático: no hay servidor. Netlify solo publica la carpeta «dist».
 [build]
   publish = "."
 
