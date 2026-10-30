@@ -11,8 +11,8 @@ Para actualizar (por ejemplo, al añadir videos): «Deploys» → arrastrar de n
 
 QUÉ HACE
 - Modo Ruta y modo Descripción, «Estás aquí», 15 destinos (Baño pide elegir piso 1 o 2).
-- Voz 1, 2 o 3 y velocidad lenta / normal / rápida (botones debajo del recuadro).
-- Repetir y Pausar/Reanudar. El audio nunca empieza solo.
+- Narrador (voz) y velocidad lenta / normal / rápida: debajo de los botones de modo.
+- Repetir y Pausar/Reanudar: en la misma franja. El audio nunca empieza solo.
 - Si no hay video en LSC para un destino, muestra el aviso y mantiene texto y audio.
 
 VIDEOS LSC (pendientes)
